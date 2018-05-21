@@ -44,16 +44,7 @@ using namespace std;
 /*=====Class Declarations=============================================*/
 
 /*=====Method Declarations============================================*/
-/*void table_toPrint(int **graph){
-    int len = sizeof(graph)/sizeof(graph[0]);
-
-    for(int i=0; i<len; i++){
-        for(int j=0; j<len; j++){
-            printf("%d ", graph[j][i]);
-        }
-        printf("\n");
-    }
-}*/
+void table_toPrint(vector<vector<int>> *);
 
 /*=====Main===========================================================*/
 
@@ -62,46 +53,42 @@ int main(int argc, char** argv){
 // initializing rand seed
     srand(time(0));
 
-// parsing input & and set up graph
-    int parser1;
-    int parser2;
+    int v = 0;						                // #vertices
+    int e = 0;						                // #edges
+    int p = 1000000009;                             // prime
 
-    istringstream iss;
-    string line;
-    getline(cin,line);
-    iss = istringstream(line);
+    // store number of vertices and edges
+    cin >> v >> e;
 
-    // read number of vertices and edges
-    iss >> parser1 >> parser2;
+    vector<vector<int>> g(v, vector<int>(v,0));     // tutte matrix of the graph
 
-    int v(parser1);						// #vertices
-    int e(parser2);						// #edges
-    int g[v][v] = {0};
+    int indice_vertex1, indice_vertex2;             // Indices of vertices
+    for(int i=0; i<e; i++){
+        cin >> indice_vertex1 >> indice_vertex2;
 
-    /*for(int i=0; i<e; i++){
-        getline(cin,line);
-        iss = istringstream(line);
-        iss >> parser1 >> parser2;
-
-        if(parser1 > parser2) {
-            g[parser1][parser2] = -1;
-            g[parser2][parser1] = 1;
+        if(indice_vertex1 > indice_vertex2) {
+            g[indice_vertex1-1][indice_vertex2-1] = -1;
+            g[indice_vertex2-1][indice_vertex1-1] = 1;
         } else {
-            g[parser1][parser2] = 1;
-            g[parser2][parser1] = -1;
+            g[indice_vertex1-1][indice_vertex2-1] = 1;
+            g[indice_vertex2-1][indice_vertex1-1] = -1;
         }
-    }*/
+    }
 
     printf("v = %d, e = %d\n", v, e);
-
-    for(int i=0; i<v; i++){
-        for(int j=0; j<v; j++){
-            printf("%d ", g[j][i]);
-        }
-        printf("\n");
-    }
+    table_toPrint(&g);
 
     return 0;
 }
 
 /*=====Methods========================================================*/
+void table_toPrint(vector<vector<int>> *graph){
+    int len = (*graph).size();
+
+    for(int i=0; i<len; i++){
+        for(int j=0; j<len; j++){
+            printf("%d ", (*graph)[j][i]);
+        }
+        printf("\n");
+    }
+}

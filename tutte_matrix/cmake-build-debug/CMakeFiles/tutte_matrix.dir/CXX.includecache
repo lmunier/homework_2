@@ -1,0 +1,30 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Munier Louis/Documents/GitHub/homework_2/tutte_matrix/main.cpp
+cstdlib
+-
+ctime
+-
+iostream
+-
+sstream
+-
+string
+-
+vector
+-
+array
+-
+algorithm
+-
+cmath
+-
+set
+-
+
