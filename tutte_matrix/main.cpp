@@ -45,6 +45,7 @@ using namespace std;
 
 /*=====Method Declarations============================================*/
 void table_toPrint(vector<vector<int>> *);
+int mod_inv(int, int);
 
 /*=====Main===========================================================*/
 
@@ -53,7 +54,7 @@ int main(int argc, char** argv){
 // initializing rand seed
     srand(time(0));
 
-    int v = 0;						                // #vertices
+    /*int v = 0;						                // #vertices
     int e = 0;						                // #edges
     int p = 1000000009;                             // prime
 
@@ -76,7 +77,10 @@ int main(int argc, char** argv){
     }
 
     printf("v = %d, e = %d\n", v, e);
-    table_toPrint(&g);
+    table_toPrint(&g);*/
+
+    int result = mod_inv(22, 211);
+    printf("%d", result);
 
     return 0;
 }
@@ -91,4 +95,28 @@ void table_toPrint(vector<vector<int>> *graph){
         }
         printf("\n");
     }
+}
+
+int mod_inv(int x, int p){
+    int n = p-2;
+    int x_2 = 0;
+    int result = 1;
+
+    if(abs(x) < p)
+        x_2 = x*x%p;
+
+    // n is odd
+    if(n%2 != 0){
+        result = x%p;
+
+        for(int i=0; i<(n-1)/2; i++)
+            result = (x_2*result)%p;
+    }
+    // n is even
+    else {
+        for(int i=0; i<n/2; i++)
+            result = (x_2*result)%p;
+    }
+
+    return result;
 }
