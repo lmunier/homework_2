@@ -47,6 +47,7 @@ using namespace std;
 void table_toPrint(vector<vector<int>> *);
 int mod_inv(int, int);
 int verify_mod(int, int, int);
+void gauss_elimination(vector<vector<int>> *);
 
 /*=====Main===========================================================*/
 
@@ -55,7 +56,7 @@ int main(int argc, char** argv){
 // initializing rand seed
     srand(time(0));
 
-    /*int v = 0;						                // #vertices
+    int v = 0;						                // #vertices
     int e = 0;						                // #edges
     int p = 1000000009;                             // prime
 
@@ -68,20 +69,19 @@ int main(int argc, char** argv){
     for(int i=0; i<e; i++){
         cin >> indice_vertex1 >> indice_vertex2;
 
-        if(indice_vertex1 > indice_vertex2) {
-            g[indice_vertex1-1][indice_vertex2-1] = -1;
-            g[indice_vertex2-1][indice_vertex1-1] = 1;
-        } else {
+        if(indice_vertex1 < indice_vertex2) {
             g[indice_vertex1-1][indice_vertex2-1] = 1;
             g[indice_vertex2-1][indice_vertex1-1] = -1;
+        } else {
+            g[indice_vertex1-1][indice_vertex2-1] = -1;
+            g[indice_vertex2-1][indice_vertex1-1] = 1;
         }
     }
 
     printf("v = %d, e = %d\n", v, e);
-    table_toPrint(&g);*/
-
-    int result = mod_inv(3, 7);
-    printf("%d", result);
+    table_toPrint(&g);
+    gauss_elimination(&g);
+    table_toPrint(&g);
 
     return 0;
 }
@@ -92,10 +92,11 @@ void table_toPrint(vector<vector<int>> *graph){
 
     for(int i=0; i<len; i++){
         for(int j=0; j<len; j++){
-            printf("%d ", (*graph)[j][i]);
+            printf("%d ", (*graph)[i][j]);
         }
         printf("\n");
     }
+    printf("\n");
 }
 
 int mod_inv(int x, int p){
@@ -134,4 +135,51 @@ int verify_mod(int a, int b, int p){
     mod = a*b%p;
 
     return mod;
+}
+
+void gauss_elimination(vector<vector<int>> *graph){
+    int n = (*graph).size();
+    int tmp = 0;
+    int max_pivot = 0;
+    int r_max_pivot = 0;
+
+    for(int c=0; c<n; c++){
+        max_pivot = 0;
+        r_max_pivot = -1;
+
+        for(int r=c; r<n; r++){
+            if(abs((*graph)[r][c]) > abs(max_pivot)){
+                max_pivot = (*graph)[r][c];
+                r_max_pivot = r;
+            }
+        }
+        printf("After max pivot\n %d\n", r_max_pivot);
+
+        if(r_max_pivot == -1)
+            break;
+
+        if(r_max_pivot > c){
+            for(int i=0; i<n; i++) {
+                tmp = (*graph)[r_max_pivot][i];
+                (*graph)[r_max_pivot][i] = (*graph)[c][i];
+                (*graph)[c][i] = tmp/max_pivot;
+            }
+        } else {
+            for(int i=0; i<n; i++)
+                (*graph)[r_max_pivot][i] /= max_pivot;
+        }
+        printf("After pivoting and normalization\n");
+        table_toPrint(graph);
+
+        for(int r=0; r<n; r++){
+            if(r != c){
+                tmp = (*graph)[r][c];
+
+                for(int i=0; i<n; i++)
+                    (*graph)[r][i] -= tmp*(*graph)[c][i];
+            }
+        }
+        printf("After all\n");
+        table_toPrint(graph);
+    }
 }
