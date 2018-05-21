@@ -46,6 +46,7 @@ using namespace std;
 /*=====Method Declarations============================================*/
 void table_toPrint(vector<vector<int>> *);
 int mod_inv(int, int);
+int verify_mod(int, int, int);
 
 /*=====Main===========================================================*/
 
@@ -100,23 +101,37 @@ void table_toPrint(vector<vector<int>> *graph){
 int mod_inv(int x, int p){
     int n = p-2;
     int x_2 = 0;
+    int end_cond = 0;
     int result = 1;
 
-    if(abs(x) < p)
-        x_2 = x*x%p;
+    // Verify if -p < x < p or not to compute in consequence
+    x_2 = verify_mod(x, x, p);
 
     // n is odd
     if(n%2 != 0){
         result = x%p;
-
-        for(int i=0; i<(n-1)/2; i++)
-            result = (x_2*result)%p;
+        end_cond = (n-1)/2;
     }
     // n is even
     else {
-        for(int i=0; i<n/2; i++)
-            result = (x_2*result)%p;
+        end_cond = n/2;
     }
 
+    for(int i=0; i<end_cond; i++)
+        result = verify_mod(x_2, result, p);
+
     return result;
+}
+
+// Verify if -p < a, b < p or not to compute in consequence
+int verify_mod(int a, int b, int p){
+    int mod = 0;
+
+    if(abs(a) > p && abs(b) > p) {
+        a %= p;
+        b %= p;
+    }
+    mod = a*b%p;
+
+    return mod;
 }
