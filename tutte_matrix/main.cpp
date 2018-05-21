@@ -17,7 +17,7 @@
 
 /*-----TODO---------*/
 /*
- * 
+ *
 */
 
 /*-----Notes--------*/
@@ -80,7 +80,7 @@ int main(int argc, char** argv){
     printf("v = %d, e = %d\n", v, e);
     table_toPrint(&g);*/
 
-    int result = mod_inv(22, 211);
+    int result = mod_inv(3, 7);
     printf("%d", result);
 
     return 0;
@@ -112,7 +112,7 @@ int mod_inv(int x, int p){
         result = x%p;
         end_cond = (n-1)/2;
     }
-    // n is even
+        // n is even
     else {
         end_cond = n/2;
     }
