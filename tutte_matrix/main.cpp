@@ -44,28 +44,27 @@ using namespace std;
 /*=====Class Declarations=============================================*/
 
 /*=====Method Declarations============================================*/
-void table_toPrint(vector<vector<int>> *);
-int mod_inv(int, int);
-int verify_mod(int, int, int);
-void gauss_elimination(vector<vector<int>> *);
+void table_toPrint(vector<vector<long int>> *);
+long int mod_inv(long int, long int);
+long int mod_mul(long int, long int, long int);
+long int gauss_elimination(vector<vector<long int>> *, long int);
 
 /*=====Main===========================================================*/
 
 int main(int argc, char** argv){
-
 // initializing rand seed
     srand(time(0));
 
     int v = 0;						                // #vertices
     int e = 0;						                // #edges
-    int p = 1000000009;                             // prime
+    long int p = 1000000009;          // prime
 
     // store number of vertices and edges
     cin >> v >> e;
 
-    vector<vector<int>> g(v, vector<int>(v,0));     // tutte matrix of the graph
+    vector<vector<long int>> g(v, vector<long int>(v,0));     // tutte matrix of the graph
 
-    int indice_vertex1, indice_vertex2;             // Indices of vertices
+    long int indice_vertex1, indice_vertex2;             // Indices of vertices
     for(int i=0; i<e; i++){
         cin >> indice_vertex1 >> indice_vertex2;
 
@@ -78,35 +77,41 @@ int main(int argc, char** argv){
         }
     }
 
-    printf("v = %d, e = %d\n", v, e);
-    table_toPrint(&g);
-    gauss_elimination(&g);
-    table_toPrint(&g);
+    /*printf("v = %d, e = %d\n", v, e);
+    table_toPrint(&g);*/
+
+    if(gauss_elimination(&g, p) != v){
+        printf("NO");
+    } else {
+        printf("YES");
+    }
+
+    //table_toPrint(&g);
 
     return 0;
 }
 
 /*=====Methods========================================================*/
-void table_toPrint(vector<vector<int>> *graph){
+void table_toPrint(vector<vector<long int>> *graph){
     int len = (*graph).size();
 
     for(int i=0; i<len; i++){
         for(int j=0; j<len; j++){
-            printf("%d ", (*graph)[i][j]);
+            printf("%ld ", (*graph)[i][j]);
         }
         printf("\n");
     }
     printf("\n");
 }
 
-int mod_inv(int x, int p){
-    int n = p-2;
-    int x_2 = 0;
-    int end_cond = 0;
-    int result = 1;
+long int mod_inv(long int x, long int p){
+    long int n = p-2;
+    long int x_2 = 0;
+    long int end_cond = 0;
+    long int result = 1;
 
     // Verify if -p < x < p or not to compute in consequence
-    x_2 = verify_mod(x, x, p);
+    x_2 = mod_mul(x, x, p);
 
     // n is odd
     if(n%2 != 0){
@@ -119,28 +124,28 @@ int mod_inv(int x, int p){
     }
 
     for(int i=0; i<end_cond; i++)
-        result = verify_mod(x_2, result, p);
+        result = mod_mul(x_2, result, p);
 
     return result;
 }
 
 // Verify if -p < a, b < p or not to compute in consequence
-int verify_mod(int a, int b, int p){
-    int mod = 0;
+long int mod_mul(long int a, long int b, long int p){
+    long int mod = 0;
 
     if(abs(a) > p && abs(b) > p) {
         a %= p;
         b %= p;
     }
-    mod = a*b%p;
+    mod = (a*b)%p;
 
     return mod;
 }
 
-void gauss_elimination(vector<vector<int>> *graph){
+long int gauss_elimination(vector<vector<long int>> *graph, long int p){
     int n = (*graph).size();
-    int tmp = 0;
-    int max_pivot = 0;
+    long int tmp = 0;
+    long int max_pivot = 0;
     int r_max_pivot = 0;
 
     for(int c=0; c<n; c++){
@@ -153,33 +158,35 @@ void gauss_elimination(vector<vector<int>> *graph){
                 r_max_pivot = r;
             }
         }
-        printf("After max pivot\n %d\n", r_max_pivot);
+        //printf("After max pivot\n %d\n", r_max_pivot);
 
         if(r_max_pivot == -1)
-            break;
+            return c;
 
         if(r_max_pivot > c){
             for(int i=0; i<n; i++) {
                 tmp = (*graph)[r_max_pivot][i];
                 (*graph)[r_max_pivot][i] = (*graph)[c][i];
-                (*graph)[c][i] = tmp/max_pivot;
+                (*graph)[c][i] = mod_mul(tmp, mod_inv(max_pivot, p), p);
             }
         } else {
             for(int i=0; i<n; i++)
-                (*graph)[r_max_pivot][i] /= max_pivot;
+                (*graph)[r_max_pivot][i] = mod_mul((*graph)[r_max_pivot][i], mod_inv(max_pivot, p), p);
         }
-        printf("After pivoting and normalization\n");
-        table_toPrint(graph);
+        /*printf("After pivoting and normalization\n");
+        table_toPrint(graph);*/
 
         for(int r=0; r<n; r++){
             if(r != c){
                 tmp = (*graph)[r][c];
 
                 for(int i=0; i<n; i++)
-                    (*graph)[r][i] -= tmp*(*graph)[c][i];
+                    (*graph)[r][i] -= mod_mul(tmp, (*graph)[c][i], p);
             }
         }
-        printf("After all\n");
-        table_toPrint(graph);
+        /*printf("After all\n");
+        table_toPrint(graph);*/
     }
+
+    return (*graph).size();
 }
