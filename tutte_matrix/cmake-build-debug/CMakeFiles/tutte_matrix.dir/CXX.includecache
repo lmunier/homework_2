@@ -13,18 +13,6 @@ ctime
 -
 iostream
 -
-sstream
--
-string
--
-vector
--
-array
--
-algorithm
--
-cmath
--
-set
+random
 -
 

@@ -31,13 +31,7 @@
 #include <cstdlib> 		// for srand
 #include <ctime>		// for time
 #include <iostream> 	// for I/O
-#include <sstream>		// for Input parsing
-#include <string> 		// for hashing
-#include <vector> 		// for lists of edges
-#include <array> 		// "
-#include <algorithm> 	// for random_shuffle
-#include <cmath> 		// for log
-#include <set> 			// for set for storing cut hashes
+#include <random>       // for random number
 
 using namespace std;
 
@@ -47,46 +41,60 @@ using namespace std;
 void table_toPrint(vector<vector<long int>> *);
 long int mod_inv(long int, long int, long int);
 long int mod_mul(long int, long int, long int);
-long int gauss_elimination(vector<vector<long int>> *, long int);
+int gauss_elimination(vector<vector<long int>> *, long int);
 
 /*=====Main===========================================================*/
 
 int main(int argc, char** argv){
-// initializing rand seed
-    srand(time(0));
+    // Initialize random numbers
+    srand(time(NULL));
 
     int v = 0;						                // #vertices
     int e = 0;						                // #edges
+    long int nbYES = 0;
+    long int nbNO = 0;
+    long int rnd = 0;
+    long int repeat = 500000;                       // # of repeating randomize + gaussian eliminnation
     long int p = 1000000009;                        // prime
 
     // store number of vertices and edges
     cin >> v >> e;
 
+    int indice_vertex[e][2];                        // store the indices of each vertex
+
+    for(int i=0; i<e; i++) {
+        cin >> indice_vertex[i][0] >> indice_vertex[i][1];
+    }
+
     vector<vector<long int>> g(v, vector<long int>(v,0));     // tutte matrix of the graph
 
-    long int indice_vertex1, indice_vertex2;                  // Indices of vertices
-    for(int i=0; i<e; i++){
-        cin >> indice_vertex1 >> indice_vertex2;
-
-        if(indice_vertex1 < indice_vertex2) {
-            g[indice_vertex1-1][indice_vertex2-1] = 1;
-            g[indice_vertex2-1][indice_vertex1-1] = -1;
-        } else {
-            g[indice_vertex1-1][indice_vertex2-1] = -1;
-            g[indice_vertex2-1][indice_vertex1-1] = 1;
+    while(repeat > 0) {
+        for(int r=0; r<v; r++){
+            for(int c=0; c<v; c++)
+                g[r][c] = 0;
         }
+
+        for (int i = 0; i < e; i++) {
+            rnd = abs(mod_mul((long int) rand(), (long int) rand(), p));
+
+            if (indice_vertex[i][0] < indice_vertex[i][1]) {
+                g[indice_vertex[i][0] - 1][indice_vertex[i][1] - 1] = rnd;
+                g[indice_vertex[i][1] - 1][indice_vertex[i][0] - 1] = -rnd;
+            } else {
+                g[indice_vertex[i][0] - 1][indice_vertex[i][1] - 1] = -rnd;
+                g[indice_vertex[i][1] - 1][indice_vertex[i][0] - 1] = rnd;
+            }
+        }
+
+        if(gauss_elimination(&g, p) != v){
+            nbNO++;
+        } else {
+            nbYES++;
+        }
+        repeat--;
     }
 
-    /*printf("v = %d, e = %d\n", v, e);
-    table_toPrint(&g);*/
-
-    if(gauss_elimination(&g, p) != v){
-        printf("NO");
-    } else {
-        printf("YES");
-    }
-
-    //table_toPrint(&g);
+    printf("nbNO: %ld, nbYES: %ld", nbNO, nbYES);
 
     return 0;
 }
@@ -137,26 +145,29 @@ long int mod_mul(long int a, long int b, long int p){
     return mod;
 }
 
-long int gauss_elimination(vector<vector<long int>> *graph, long int p){
+int gauss_elimination(vector<vector<long int>> *graph, long int p){
     int n = (*graph).size();
     long int tmp = 0;
     long int max_pivot = 0;
     int r_max_pivot = 0;
 
-    for(int c=0; c<n; c++){
+    for(int c=0; c<n; c++) {
         max_pivot = 0;
         r_max_pivot = -1;
 
-        for(int r=c; r<n; r++){
-            if(abs((*graph)[r][c]) > abs(max_pivot)){
+        for (int r = c; r < n; r++) {
+            if (abs((*graph)[r][c]) > abs(max_pivot)) {
                 max_pivot = (*graph)[r][c];
                 r_max_pivot = r;
             }
         }
-        //printf("After max pivot\n %d\n", r_max_pivot);
 
-        if(r_max_pivot == -1)
-            return c;
+        if (r_max_pivot == -1){
+            if(max_pivot == 0)
+                return -1;
+            else
+                return c;
+        }
 
         if(r_max_pivot > c){
             for(int i=0; i<n; i++) {
@@ -168,8 +179,6 @@ long int gauss_elimination(vector<vector<long int>> *graph, long int p){
             for(int i=0; i<n; i++)
                 (*graph)[r_max_pivot][i] = mod_mul((*graph)[r_max_pivot][i], mod_inv(max_pivot, p-2, p), p);
         }
-        /*printf("After pivoting and normalization\n");
-        table_toPrint(graph);*/
 
         for(int r=0; r<n; r++){
             if(r != c){
@@ -179,9 +188,7 @@ long int gauss_elimination(vector<vector<long int>> *graph, long int p){
                     (*graph)[r][i] -= mod_mul(tmp, (*graph)[c][i], p);
             }
         }
-        /*printf("After all\n");
-        table_toPrint(graph);*/
     }
 
-    return (long int) (*graph).size();
+    return (int) (*graph).size();
 }
