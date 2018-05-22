@@ -45,7 +45,7 @@ using namespace std;
 
 /*=====Method Declarations============================================*/
 void table_toPrint(vector<vector<long int>> *);
-long int mod_inv(long int, long int);
+long int mod_inv(long int, long int, long int);
 long int mod_mul(long int, long int, long int);
 long int gauss_elimination(vector<vector<long int>> *, long int);
 
@@ -57,14 +57,14 @@ int main(int argc, char** argv){
 
     int v = 0;						                // #vertices
     int e = 0;						                // #edges
-    long int p = 1000000009;          // prime
+    long int p = 1000000009;                        // prime
 
     // store number of vertices and edges
     cin >> v >> e;
 
     vector<vector<long int>> g(v, vector<long int>(v,0));     // tutte matrix of the graph
 
-    long int indice_vertex1, indice_vertex2;             // Indices of vertices
+    long int indice_vertex1, indice_vertex2;                  // Indices of vertices
     for(int i=0; i<e; i++){
         cin >> indice_vertex1 >> indice_vertex2;
 
@@ -104,29 +104,24 @@ void table_toPrint(vector<vector<long int>> *graph){
     printf("\n");
 }
 
-long int mod_inv(long int x, long int p){
-    long int n = p-2;
+long int mod_inv(long int x, long int n, long int p){
     long int x_2 = 0;
-    long int end_cond = 0;
-    long int result = 1;
 
     // Verify if -p < x < p or not to compute in consequence
     x_2 = mod_mul(x, x, p);
 
+    if(n == 0)
+        return 1;
+    else if(n == 1)
+        return x;
     // n is odd
-    if(n%2 != 0){
-        result = x%p;
-        end_cond = (n-1)/2;
+    else if(n%2 != 0){
+        return mod_mul(x, mod_inv(x_2, (n-1)/2, p), p);
     }
-        // n is even
-    else {
-        end_cond = n/2;
+    // n is even
+    else if(n%2 == 0){
+        return mod_inv(x_2, n/2, p);
     }
-
-    for(int i=0; i<end_cond; i++)
-        result = mod_mul(x_2, result, p);
-
-    return result;
 }
 
 // Verify if -p < a, b < p or not to compute in consequence
@@ -167,11 +162,11 @@ long int gauss_elimination(vector<vector<long int>> *graph, long int p){
             for(int i=0; i<n; i++) {
                 tmp = (*graph)[r_max_pivot][i];
                 (*graph)[r_max_pivot][i] = (*graph)[c][i];
-                (*graph)[c][i] = mod_mul(tmp, mod_inv(max_pivot, p), p);
+                (*graph)[c][i] = mod_mul(tmp, mod_inv(max_pivot, p-2, p), p);
             }
         } else {
             for(int i=0; i<n; i++)
-                (*graph)[r_max_pivot][i] = mod_mul((*graph)[r_max_pivot][i], mod_inv(max_pivot, p), p);
+                (*graph)[r_max_pivot][i] = mod_mul((*graph)[r_max_pivot][i], mod_inv(max_pivot, p-2, p), p);
         }
         /*printf("After pivoting and normalization\n");
         table_toPrint(graph);*/
@@ -188,5 +183,5 @@ long int gauss_elimination(vector<vector<long int>> *graph, long int p){
         table_toPrint(graph);*/
     }
 
-    return (*graph).size();
+    return (long int) (*graph).size();
 }
