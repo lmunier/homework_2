@@ -48,7 +48,7 @@ int gauss_elimination(vector<vector<long long int>> *, long long int);
 int main(int argc, char** argv){
     unsigned int v = 0;						                // #vertices
     unsigned int e = 0;						                // #edges
-    unsigned int repeat = 2000000;                       // # of repeating randomize + gaussian eliminnation
+    unsigned int repeat = 1000000;                       // # of repeating randomize + gaussian eliminnation
     long long int rnd = 0;
     long int p = 1000000009;                                // prime
 
@@ -117,6 +117,9 @@ void table_toPrint(vector<vector<long long int>> *graph){
 }
 
 long long int mod_inv(long long int x, long long int n, long long int p){
+    if(x == 0)
+        return 0;
+
     long long int x_2 = 0;
 
     // Verify if -p < x < p or not to compute in consequence
@@ -138,6 +141,9 @@ long long int mod_inv(long long int x, long long int n, long long int p){
 
 // Verify if -p < a, b < p or not to compute in consequence
 long long int mod_mul(long long int a, long long int b, long long int p){
+    if(a == 0 || b == 0)
+        return 0;
+
     a %= p;
     b %= p;
 
@@ -170,7 +176,7 @@ int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
 
         // Normalize pivot row
         for(auto &it : (*graph)[r_max_pivot])
-            it = mod_mul(it, mod_inv(max_pivot, p-2, p), p);
+                it = mod_mul(it, mod_inv(max_pivot, p - 2, p), p);
 
         // Swap lines if pivot is not in the diagonal
         if(r_max_pivot > c)
