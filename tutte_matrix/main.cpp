@@ -46,71 +46,59 @@ int gauss_elimination(vector<vector<long long int>> *, long long int);
 /*=====Main===========================================================*/
 
 int main(int argc, char** argv){
-    // Initialize random numbers
-    srand(time(NULL));
-
-    int v = 0;						                // #vertices
-    int e = 0;						                // #edges
-    int verif = 0;                                  // #of correct column in row echelon form
-    long int nbYES = 0;
-    long int nbNO = 0;
-    long int repeat = 700;                          // # of repeating randomize + gaussian eliminnation
+    unsigned int v = 0;						                // #vertices
+    unsigned int e = 0;						                // #edges
+    unsigned int repeat = 2000000;                       // # of repeating randomize + gaussian eliminnation
     long long int rnd = 0;
-    long long int p = 1000000009;                   // prime
+    long int p = 1000000009;                                // prime
+
+    random_device rd;
+    uniform_real_distribution<long double> dist(-p, p);
 
     // store number of vertices and edges
     cin >> v >> e;
 
-    int indice_vertex[e][2];                        // store the indices of each vertex
+    int index_vertex[e][2];                        // store the indices of each vertex
 
     for(int i=0; i<e; i++) {
-        cin >> indice_vertex[i][0] >> indice_vertex[i][1];
+        cin >> index_vertex[i][0] >> index_vertex[i][1];
     }
 
     vector<vector<long long int>> g(v, vector<long long int>(v,0));     // tutte matrix of the graph
 
-    while(repeat > 0) {
+    //clock_t begin = clock();
+    while(repeat > 0){
         for (int i = 0; i < e; i++) {
-            rnd = abs(mod_mul((long long int) rand(), (long long int) rand(), p));
+            rnd = (long long int) dist(rd);
 
-            if (indice_vertex[i][0] < indice_vertex[i][1]) {
-                g[indice_vertex[i][0] - 1][indice_vertex[i][1] - 1] = rnd;
-                g[indice_vertex[i][1] - 1][indice_vertex[i][0] - 1] = -rnd;
+            if (index_vertex[i][0] < index_vertex[i][1]) {
+                g[index_vertex[i][0] - 1][index_vertex[i][1] - 1] = rnd;
+                g[index_vertex[i][1] - 1][index_vertex[i][0] - 1] = -rnd;
             } else {
-                g[indice_vertex[i][0] - 1][indice_vertex[i][1] - 1] = -rnd;
-                g[indice_vertex[i][1] - 1][indice_vertex[i][0] - 1] = rnd;
+                g[index_vertex[i][0] - 1][index_vertex[i][1] - 1] = -rnd;
+                g[index_vertex[i][1] - 1][index_vertex[i][0] - 1] = rnd;
             }
         }
 
-        verif = gauss_elimination(&g, p);
-
-        if(verif != v){
-            nbNO++;
+        if(gauss_elimination(&g, p) == v) {
+            printf("YES");
+            break;
         } else {
-            nbYES++;
+            repeat--;
         }
-        repeat--;
 
         // Reinitialize g vector table
-        for(int r=0; r<v; r++){
-            if(r < verif)
-                g[r][r] = 0;
-            else if (verif > 0){
-                for (int c = verif-1; c < v; c++)
-                        g[r][c] = 0;
-            } else {
-                for (int c = 0; c < v; c++)
-                    g[r][c] = 0;
-            }
-        }
+        for (auto &i : g)
+            fill(i.begin(), i.end(), 0);
     }
 
-    if(nbNO < nbYES)
-        printf("YES");
-    else
-        printf("NO");
+    /*clock_t end = clock();
+    double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
 
-    //printf("nbNO: %ld, nbYES: %ld", nbNO, nbYES);
+    printf("%f\n", elapsed_secs);*/
+
+    if(repeat == 0)
+        printf("NO");
 
     return 0;
 }
@@ -150,15 +138,10 @@ long long int mod_inv(long long int x, long long int n, long long int p){
 
 // Verify if -p < a, b < p or not to compute in consequence
 long long int mod_mul(long long int a, long long int b, long long int p){
-    long long int mod = 0;
+    a %= p;
+    b %= p;
 
-    if(abs(a) > p && abs(b) > p) {
-        a %= p;
-        b %= p;
-    }
-    mod = (a*b)%p;
-
-    return mod;
+    return (a*b)%p;
 }
 
 int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
@@ -185,26 +168,25 @@ int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
                 return c;
         }
 
-        // Switch lines if pivot is not in the diagonal
-        if(r_max_pivot > c){
-            for(int i=0; i<n; i++) {
-                tmp = (*graph)[r_max_pivot][i];
-                (*graph)[r_max_pivot][i] = (*graph)[c][i];
-                (*graph)[c][i] = mod_mul(tmp, mod_inv(max_pivot, p-2, p), p);
-            }
-        } else {
-            for(int i=0; i<n; i++)
-                (*graph)[r_max_pivot][i] = mod_mul((*graph)[r_max_pivot][i], mod_inv(max_pivot, p-2, p), p);
-        }
+        // Normalize pivot row
+        for(auto &it : (*graph)[r_max_pivot])
+            it = mod_mul(it, mod_inv(max_pivot, p-2, p), p);
+
+        // Swap lines if pivot is not in the diagonal
+        if(r_max_pivot > c)
+            (*graph)[r_max_pivot].swap((*graph)[c]);
 
         for(int r=0; r<n; r++){
             if(r != c){
                 tmp = (*graph)[r][c];
 
-                for(int i=0; i<n; i++)
+                for(int i=c; i<n; i++)
                     (*graph)[r][i] -= mod_mul(tmp, (*graph)[c][i], p);
             }
         }
+
+        //printf("After all\n");
+        //table_toPrint(graph);
     }
 
     return n;
