@@ -48,7 +48,7 @@ int gauss_elimination(vector<vector<long long int>> *, long long int);
 int main(int argc, char** argv){
     unsigned int v = 0;						                // #vertices
     unsigned int e = 0;						                // #edges
-    unsigned int repeat = 1000000;                       // # of repeating randomize + gaussian eliminnation
+    unsigned int repeat = 1000000;                          // # of repeating randomize + gaussian eliminnation
     long long int rnd = 0;
     long int p = 1000000009;                                // prime
 
@@ -182,17 +182,15 @@ int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
         if(r_max_pivot > c)
             (*graph)[r_max_pivot].swap((*graph)[c]);
 
-        for(int r=0; r<n; r++){
-            if(r != c){
-                tmp = (*graph)[r][c];
+        for(int r=c+1; r<n; r++){
+            tmp = (*graph)[r][c];
 
-                for(int i=c; i<n; i++)
-                    (*graph)[r][i] -= mod_mul(tmp, (*graph)[c][i], p);
-            }
+            for(int i=c; i<n; i++)
+                (*graph)[r][i] -= mod_mul(tmp, (*graph)[c][i], p);
         }
 
-        //printf("After all\n");
-        //table_toPrint(graph);
+        /*printf("After all\n");
+        table_toPrint(graph);*/
     }
 
     return n;
