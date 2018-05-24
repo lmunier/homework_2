@@ -17,7 +17,9 @@
 
 /*-----TODO---------*/
 /*
- *
+ * Find a solution to pass the test 11
+ *      - Have we to optimize our code to run more in order to print "YES" ? But we repeat it 1'000'000 times right now.
+ *      - There is an error in the code ?
 */
 
 /*-----Notes--------*/
