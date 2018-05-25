@@ -50,9 +50,9 @@ int gauss_elimination(vector<vector<long long int>> *, long long int);
 int main(int argc, char** argv){
     unsigned int v = 0;						                // #vertices
     unsigned int e = 0;						                // #edges
-    unsigned int repeat = 1000000;                          // # of repeating randomize + gaussian eliminnation
+    unsigned int repeat = 50;                               // # of repeating randomize + gaussian eliminnation
     long long int rnd = 0;
-    long int p = 1000000009;                                // prime
+    long long int p = 1000000009;                                // prime
 
     random_device rd;
     uniform_real_distribution<long double> dist(-p, p);
@@ -119,9 +119,6 @@ void table_toPrint(vector<vector<long long int>> *graph){
 }
 
 long long int mod_inv(long long int x, long long int n, long long int p){
-    if(x == 0)
-        return 0;
-
     long long int x_2 = 0;
 
     // Verify if -p < x < p or not to compute in consequence
@@ -156,6 +153,7 @@ int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
     int r_max_pivot = 0;
     int n = (*graph).size();
     long long int tmp = 0;
+    long long int inv_max_pivot = 0;
     long long int max_pivot = 0;
 
     for(int c=0; c<n; c++) {
@@ -177,14 +175,16 @@ int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
         }
 
         // Normalize pivot row
+        inv_max_pivot = mod_inv(max_pivot, p - 2, p);
+
         for(auto &it : (*graph)[r_max_pivot])
-                it = mod_mul(it, mod_inv(max_pivot, p - 2, p), p);
+            it = mod_mul(it, inv_max_pivot, p);
 
         // Swap lines if pivot is not in the diagonal
-        if(r_max_pivot > c)
+        if(r_max_pivot != c)
             (*graph)[r_max_pivot].swap((*graph)[c]);
 
-        for(int r=c+1; r<n; r++){
+        for(int r = c + 1; r < n; r++){
             tmp = (*graph)[r][c];
 
             for(int i=c; i<n; i++)
