@@ -41,7 +41,7 @@ using namespace std;
 
 /*=====Method Declarations============================================*/
 void table_toPrint(vector<vector<long long int>> *);
-long long int mod_inv(long long int, long long int, long long int);
+long long int mod_inv(long long int, long long int);
 long long int mod_mul(long long int, long long int, long long int);
 int gauss_elimination(vector<vector<long long int>> *, long long int);
 
@@ -55,7 +55,7 @@ int main(int argc, char** argv){
     long long int p = 1000000009;                                // prime
 
     random_device rd;
-    uniform_real_distribution<long double> dist(-p, p);
+    uniform_int_distribution<long long> dist(-p, p);
 
     // store number of vertices and edges
     cin >> v >> e;
@@ -66,12 +66,12 @@ int main(int argc, char** argv){
         cin >> index_vertex[i][0] >> index_vertex[i][1];
     }
 
-    vector<vector<long long int>> g(v, vector<long long int>(v,0));     // tutte matrix of the graph
+    vector<vector<long long int>> g(v, vector<long long int>(v,0));    // tutte matrix of the graph
 
     //clock_t begin = clock();
     while(repeat > 0){
         for (int i = 0; i < e; i++) {
-            rnd = (long long int) dist(rd);
+            rnd = dist(rd);
 
             if (index_vertex[i][0] < index_vertex[i][1]) {
                 g[index_vertex[i][0] - 1][index_vertex[i][1] - 1] = rnd;
@@ -118,24 +118,25 @@ void table_toPrint(vector<vector<long long int>> *graph){
     printf("\n");
 }
 
-long long int mod_inv(long long int x, long long int n, long long int p){
-    long long int x_2 = 0;
+long long int mod_inv(long long int x, long long int p){
+    if(x < 0)
+        x += p;
 
-    // Verify if -p < x < p or not to compute in consequence
-    x_2 = mod_mul(x, x, p);
+    long long n = p-2;
+    long long y = 1;
 
-    if(n == 0)
-        return 1;
-    else if(n == 1)
-        return x;
-    // n is odd
-    else if(n%2 != 0){
-        return mod_mul(x, mod_inv(x_2, (n-1)/2, p), p);
+    while(n > 1) {
+        if (n%2==0) {   // n is even
+            x = mod_mul(x, x, p);
+            n = n/2;
+        } else {        // n is odd
+            y = mod_mul(x, y, p);
+            x = mod_mul(x, x, p);
+            n = (n-1)/2;
+        }
     }
-    // n is even
-    else if(n%2 == 0){
-        return mod_inv(x_2, n/2, p);
-    }
+
+    return mod_mul(x, y, p);
 }
 
 // Verify if -p < a, b < p or not to compute in consequence
@@ -150,24 +151,25 @@ long long int mod_mul(long long int a, long long int b, long long int p){
 }
 
 int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
-    int r_max_pivot = 0;
+    int row_max_pivot = 0;
     int n = (*graph).size();
-    long long int tmp = 0;
+    long long int first_element = 0;
     long long int inv_max_pivot = 0;
     long long int max_pivot = 0;
 
     for(int c=0; c<n; c++) {
         max_pivot = 0;
-        r_max_pivot = -1;
+        row_max_pivot = -1;
 
         for (int r = c; r < n; r++) {
             if (abs((*graph)[r][c]) > abs(max_pivot)) {
                 max_pivot = (*graph)[r][c];
-                r_max_pivot = r;
+                row_max_pivot = r;
             }
         }
 
-        if (r_max_pivot == -1){
+        // if rest of column is 0
+        if (row_max_pivot == -1){
             if(max_pivot == 0)
                 return -1;
             else
@@ -175,20 +177,29 @@ int gauss_elimination(vector<vector<long long int>> *graph, long long int p){
         }
 
         // Normalize pivot row
-        inv_max_pivot = mod_inv(max_pivot, p - 2, p);
+        inv_max_pivot = mod_inv(max_pivot, p);
 
-        for(auto &it : (*graph)[r_max_pivot])
-            it = mod_mul(it, inv_max_pivot, p);
+        for(int column=c; column<n; column++) {
+            (*graph)[row_max_pivot][column] = mod_mul((*graph)[row_max_pivot][column], inv_max_pivot, p);
+
+            if ((*graph)[row_max_pivot][column] < 0)
+                (*graph)[row_max_pivot][column] += p;
+        }
 
         // Swap lines if pivot is not in the diagonal
-        if(r_max_pivot != c)
-            (*graph)[r_max_pivot].swap((*graph)[c]);
+        if(row_max_pivot != c)
+            (*graph)[row_max_pivot].swap((*graph)[c]);
 
+        // normalize rest of rows
         for(int r = c + 1; r < n; r++){
-            tmp = (*graph)[r][c];
+            first_element = (*graph)[r][c];
 
-            for(int i=c; i<n; i++)
-                (*graph)[r][i] -= mod_mul(tmp, (*graph)[c][i], p);
+            for(int i=c; i<n; i++){
+                (*graph)[r][i] -= mod_mul(first_element, (*graph)[c][i], p);
+
+                if ((*graph)[r][i] < 0)
+                    (*graph)[r][i] += p;
+            }
         }
 
         /*printf("After all\n");
